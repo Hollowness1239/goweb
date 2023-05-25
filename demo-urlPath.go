@@ -34,7 +34,7 @@ func init() {
 			"instructor": "pita"
 		},
 		{
-			"id":1,
+			"id":3,
 			"name":"flutter",
 			"price":10000,
 			"instructor": "boss"
@@ -77,6 +77,7 @@ func courseHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("findCourse:", findCourse)
 	fmt.Println("index:", index)
 	if findCourse == nil {
+		fmt.Println("err1")
 		http.Error(w, fmt.Sprintf("no course with ID %d", ID), http.StatusNotFound)
 		return
 	}
@@ -85,24 +86,29 @@ func courseHandler(w http.ResponseWriter, r *http.Request) {
 		courseJSON, err := json.Marshal(findCourse)
 		fmt.Println("courseJSON:", courseJSON)
 		if err != nil {
+		fmt.Println("err2")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(courseJSON)
 	case http.MethodPut:
+		fmt.Println("PUT")
 		var updateCourse Course
 		byteBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+		fmt.Println("err3")
+		w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		err = json.Unmarshal(byteBody, &updateCourse)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+		fmt.Println("err4")
+		w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if updateCourse.ID == ID {
+		if updateCourse.ID != ID {
+			fmt.Println("err5")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -152,7 +158,7 @@ func coursesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/course", courseHandler)
+	http.HandleFunc("/course/", courseHandler)
 	http.HandleFunc("/course", coursesHandler)
 	http.ListenAndServe(":5000", nil)
 }
